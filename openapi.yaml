@@ -1,0 +1,462 @@
+openapi: 3.1.0
+info:
+  title: AI-Powered Website Link Analysis API
+  description: |
+    Production-grade enterprise REST microservice built with FastAPI and Google Gemini 1.5 Flash.
+    Accepts any public website URL, enforces zero-trust SSRF validation, extracts semantic HTML, 
+    and returns a structured 5-section business intelligence report.
+  version: 1.0.0-PROD
+  contact:
+    name: Piyush Makhija
+    url: https://github.com/piyushmakhija28/ai-link-analysis
+servers:
+  - url: http://localhost:4000
+    description: Local Development Server
+  - url: https://ai-link-analysis.onrender.com
+    description: Render.com Production Cloud Service
+
+paths:
+  /link-analysis:
+    post:
+      summary: Analyze Website Link
+      description: |
+        Ingests a public website URL, executes multi-stage SSRF sanitization, 
+        prunes semantic HTML DOM tree to <8,000 tokens, and synthesizes 5 strategic 
+        business intelligence dimensions using Google Gemini 1.5 Flash.
+      operationId: analyze_link
+      parameters:
+        - in: header
+          name: X-Correlation-ID
+          schema:
+            type: string
+            format: uuid
+          required: false
+          description: Distributed tracing correlation ID. Auto-generated if omitted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkAnalysisRequest'
+            example:
+              url: "https://example.com"
+      responses:
+        '200':
+          description: Successful website business intelligence analysis.
+          headers:
+            X-Correlation-ID:
+              schema:
+                type: string
+                format: uuid
+              description: Request correlation tracing identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkAnalysisResponse'
+        '400':
+          description: Ingress validation or SSRF security violation.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '413':
+          description: Target payload exceeds 5MB streaming size limit.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Malformed JSON or unparseable URL input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '502':
+          description: Upstream website unreachable or AI provider error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '504':
+          description: Upstream website connection/read SLA timeout (10.0s).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /health:
+    get:
+      summary: SRE Liveness Probe
+      description: Returns service uptime, runtime health, and release version.
+      operationId: get_health
+      responses:
+        '200':
+          description: Service is healthy and active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      summary: SRE Readiness Probe
+      description: Evaluates external network egress and LLM provider readiness.
+      operationId: get_ready
+      responses:
+        '200':
+          description: Service is fully ready to accept inbound traffic.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service is initializing or experiencing network isolation.
+
+components:
+  schemas:
+    LinkAnalysisRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Public website URL to analyze (must use http or https).
+          example: "https://example.com"
+
+    BrandInfo:
+      type: object
+      required:
+        - name
+        - category
+        - summary
+      properties:
+        name:
+          type: string
+          description: Identified brand or company name.
+          example: "Example Corp"
+        category:
+          type: string
+          description: Primary industry or business category.
+          example: "Technology Services"
+        summary:
+          type: string
+          description: Concise overview of company business operations.
+          example: "A digital solutions company providing cloud migration."
+
+    CompetitorItem:
+      type: object
+      required:
+        - name
+        - strengths
+        - weaknesses
+      properties:
+        name:
+          type: string
+          example: "Competitor Alpha"
+        strengths:
+          type: array
+          items:
+            type: string
+          example: ["Strong brand recognition", "Extensive enterprise sales team"]
+        weaknesses:
+          type: array
+          items:
+            type: string
+          example: ["Higher pricing", "Legacy monolithic codebase"]
+
+    CompetitorAnalysis:
+      type: object
+      required:
+        - brand_overview
+        - competitors
+        - competitive_advantages
+        - opportunities
+      properties:
+        brand_overview:
+          type: string
+        competitors:
+          type: array
+          minItems: 3
+          items:
+            $ref: '#/components/schemas/CompetitorItem'
+        competitive_advantages:
+          type: array
+          items:
+            type: string
+        opportunities:
+          type: array
+          items:
+            type: string
+
+    TargetSearchQuery:
+      type: object
+      required:
+        - query
+        - platform
+        - intent
+        - relevance
+        - target_audience
+      properties:
+        query:
+          type: string
+          example: "best cloud migration services company"
+        platform:
+          type: string
+          enum: [Google, Facebook, Instagram, LinkedIn, X]
+          example: "Google"
+        intent:
+          type: string
+          example: "Commercial Investigation"
+        relevance:
+          type: string
+          example: "Directly matches enterprise cloud transition services."
+        target_audience:
+          type: string
+          example: "CTOs and IT Directors"
+
+    SEOImprovements:
+      type: object
+      required:
+        - primary_keyword
+        - secondary_keywords
+        - long_tail_keywords
+        - recommended_title
+        - meta_description
+        - supporting_content
+      properties:
+        primary_keyword:
+          type: string
+          example: "Cloud Migration Services"
+        secondary_keywords:
+          type: array
+          items:
+            type: string
+        long_tail_keywords:
+          type: array
+          items:
+            type: string
+        recommended_title:
+          type: string
+          example: "Cloud Migration & Modernization Services | Example Corp"
+        meta_description:
+          type: string
+          example: "Accelerate your digital transition with secure, scalable cloud modernization."
+        supporting_content:
+          type: array
+          items:
+            type: string
+
+    ServiceItem:
+      type: object
+      required:
+        - name
+        - description
+        - target_industry
+        - target_customer
+        - main_benefit
+      properties:
+        name:
+          type: string
+          example: "Legacy Application Modernization"
+        description:
+          type: string
+          example: "Refactoring monolithic architectures into cloud-native microservices."
+        target_industry:
+          type: string
+          example: "Financial Services & Healthcare"
+        target_customer:
+          type: string
+          example: "Enterprise IT Executives"
+        main_benefit:
+          type: string
+          example: "Reduces infrastructure maintenance overhead by 40%."
+
+    TargetAudience:
+      type: object
+      required:
+        - primary_audience
+        - secondary_audience
+        - industries
+        - customer_needs
+        - geographical_focus
+      properties:
+        primary_audience:
+          type: array
+          items:
+            type: string
+        secondary_audience:
+          type: array
+          items:
+            type: string
+        industries:
+          type: array
+          items:
+            type: string
+        customer_needs:
+          type: array
+          items:
+            type: string
+        geographical_focus:
+          type: string
+          example: "Global / North America & Western Europe"
+
+    AnalysisPayload:
+      type: object
+      required:
+        - competitor_analysis
+        - target_search_queries
+        - seo_improvements
+        - top_services
+        - target_audience
+      properties:
+        competitor_analysis:
+          $ref: '#/components/schemas/CompetitorAnalysis'
+        target_search_queries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetSearchQuery'
+        seo_improvements:
+          $ref: '#/components/schemas/SEOImprovements'
+        top_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceItem'
+        target_audience:
+          $ref: '#/components/schemas/TargetAudience'
+
+    AnalysisTelemetry:
+      type: object
+      required:
+        - execution_time_seconds
+        - input_tokens_estimated
+        - output_tokens_estimated
+        - total_cost_usd
+        - ai_model
+        - cache_hit
+        - correlation_id
+      properties:
+        execution_time_seconds:
+          type: number
+          example: 1.45
+        input_tokens_estimated:
+          type: integer
+          example: 7820
+        output_tokens_estimated:
+          type: integer
+          example: 1410
+        total_cost_usd:
+          type: number
+          example: 0.00101
+        ai_model:
+          type: string
+          example: "gemini-1.5-flash"
+        cache_hit:
+          type: boolean
+          example: false
+        correlation_id:
+          type: string
+          format: uuid
+
+    LinkAnalysisResponse:
+      type: object
+      required:
+        - success
+        - website
+        - brand
+        - analysis
+        - telemetry
+      properties:
+        success:
+          type: boolean
+          example: true
+        website:
+          type: string
+          example: "https://example.com"
+        brand:
+          $ref: '#/components/schemas/BrandInfo'
+        analysis:
+          $ref: '#/components/schemas/AnalysisPayload'
+        telemetry:
+          $ref: '#/components/schemas/AnalysisTelemetry'
+
+    ProblemDetails:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+        - correlation_id
+        - timestamp
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://errors.ailinkanalysis.com/ssrf-violation"
+        title:
+          type: string
+          example: "SSRF Security Violation"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "Target URL resolves to a prohibited private network address."
+        instance:
+          type: string
+          example: "/link-analysis"
+        correlation_id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - uptime_seconds
+        - version
+        - timestamp
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        uptime_seconds:
+          type: number
+          example: 3600.4
+        version:
+          type: string
+          example: "1.0.0-PROD"
+        timestamp:
+          type: string
+          format: date-time
+
+    ReadinessResponse:
+      type: object
+      required:
+        - status
+        - llm_provider
+        - llm_model
+        - mock_mode
+        - network_egress
+      properties:
+        status:
+          type: string
+          example: "ready"
+        llm_provider:
+          type: string
+          example: "google-gemini"
+        llm_model:
+          type: string
+          example: "gemini-1.5-flash"
+        mock_mode:
+          type: boolean
+          example: false
+        network_egress:
+          type: string
+          example: "operational"
