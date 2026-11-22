@@ -1,72 +1,102 @@
-# Observability Architecture: Structured JSON Logging
+# Observability Architecture: Structured JSON Logging & ECS/OpenTelemetry Mapping
 
 > **Author:** Piyush Makhija (Technical Lead / Senior Software Engineer)  
 > **Client / Evaluator:** Dxora Technologies (`hr@chivoxai.com`)  
+> **Repository:** [https://github.com/piyushmakhija28/ai-link-analysis](https://github.com/piyushmakhija28/ai-link-analysis)  
 > **Version:** 1.0.0-PROD  
 > **Date:** November 2026  
+> **Status:** Baselined & Enforced  
 
 ---
 
-## 1. Principles of Observability
+## 1. Principles of Enterprise Observability
 
-In production microservices, unstructured text logs and raw `print()` statements are antipatterns. They cannot be indexed, queried, or monitored effectively by Logstash, Datadog, CloudWatch, or Splunk.
+In production cloud microservices, plain-text logs and unstructured `print()` statements are anti-patterns:
+- They cannot be parsed, indexed, or queried programmatically by log aggregation engines (Elasticsearch, OpenSearch, Datadog, AWS CloudWatch, or Splunk).
+- They lack correlation identifiers, making it impossible to trace an asynchronous request across concurrent event loop tasks.
+- They risk leaking sensitive environment secrets, internal IPs, or PII.
 
-`ai-link-analysis` enforces **100% Structured JSON Logging** with:
-1. ISO-8601 UTC Timestamps.
-2. Distributed tracing correlation IDs (`X-Correlation-ID`) automatically injected from `contextvars`.
-3. Standard log levels: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
-4. Sanitization: Automatic redaction of sensitive credentials and API keys.
+The `ai-link-analysis` microservice enforces **100% Structured JSON Logging** mapped to **Elastic Common Schema (ECS)** and **OpenTelemetry** logging guidelines.
 
 ---
 
-## 2. JSON Log Record Schema
+## 2. Formal JSON Log Schema (ECS Compliant)
+
+Every log emitted by the service conforms to the following schema:
 
 ```json
 {
-  "timestamp": "2026-11-22T07:45:00.123Z",
-  "level": "INFO",
+  "@timestamp": "2026-11-22T07:45:00.123456Z",
+  "log.level": "INFO",
+  "service.name": "ai-link-analysis",
+  "service.version": "1.0.0-PROD",
+  "service.environment": "production",
+  "trace.id": "c9a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
+  "transaction.id": "f47ac10b-58cc-4372-a567-0e02b2c3d4e5",
   "logger": "app.services.analysis_orchestrator",
-  "correlation_id": "c9a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-  "module": "analysis_orchestrator",
-  "function": "analyze_link",
-  "line": 84,
-  "message": "Completed website content extraction and business intelligence synthesis.",
-  "target_url": "https://example.com",
-  "execution_time_seconds": 1.45,
-  "input_tokens_estimated": 7820,
-  "output_tokens_estimated": 1410,
-  "total_cost_usd": 0.00101,
-  "ai_model": "gemini-1.5-flash",
-  "cache_hit": false
+  "process.thread.id": 140325890,
+  "code.filepath": "app/services/analysis_orchestrator.py",
+  "code.lineno": 94,
+  "code.function": "analyze_link",
+  "message": "Website analysis completed successfully.",
+  "http.request.method": "POST",
+  "url.full": "https://dxora.com",
+  "client.ip": "198.51.100.42",
+  "llm.provider": "google-gemini",
+  "llm.model": "gemini-1.5-flash",
+  "llm.tokens.input": 7820,
+  "llm.tokens.output": 1410,
+  "llm.cost.usd": 0.00101,
+  "llm.cost.inr": 0.08686,
+  "cache.hit": false,
+  "event.duration_ms": 1450.25
 }
 ```
 
 ---
 
-## 3. Correlation ID Propagation Architecture
+## 3. Asynchronous Contextvars Correlation Propagation
+
+FastAPI processes multiple concurrent requests on a single Python thread using asynchronous cooperative multitasking. Traditional thread-local storage (`threading.local`) fails in async code because multiple concurrent coroutines share the same thread.
+
+We use Python's native `contextvars` module to maintain thread-safe, coroutine-isolated correlation context:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Client
-    participant MW as Correlation ID Middleware
-    participant Context as Python contextvars
-    participant Router as Analysis Router
-    participant Service as Orchestrator / Extractor
-    participant Logger as Structured JSON Logger
+    participant MW as ASGI Middleware (CorrelationMiddleware)
+    participant Context as contextvars.ContextVar("correlation_id")
+    participant Router as Ingress Router (/link-analysis)
+    participant Service as Orchestrator & Services
+    participant Logger as StructuredLogger (JsonFormatter)
 
-    Client->>MW: POST /link-analysis (Optional: X-Correlation-ID)
-    alt Header present
-        MW->>Context: Store incoming X-Correlation-ID
-    else Header missing
-        MW->>Context: Generate new UUIDv4 and store
+    Client->>MW: Inbound POST /link-analysis (Header: X-Correlation-ID)
+    alt Header Present
+        MW->>Context: Set correlation_id = request.headers["X-Correlation-ID"]
+    else Header Omitted
+        MW->>Context: Set correlation_id = str(uuid.uuid4())
     end
     MW->>Router: Forward Request
-    Router->>Logger: Log Ingress (Fetches ID from contextvars)
-    Logger-->>Logger: Output JSON Log with correlation_id
-    Router->>Service: Execute Workflow
-    Service->>Logger: Log Extraction & LLM Steps
-    Service-->>Router: Return BI Response
-    Router-->>MW: Return Response
-    MW-->>Client: HTTP 200 OK (Header: X-Correlation-ID)
+    Router->>Logger: logger.info("Ingress received")
+    Logger->>Context: get_correlation_id()
+    Logger-->>Logger: Format JSON Record with trace.id
+    Router->>Service: Execute Analysis Workflow
+    Service->>Logger: logger.info("LLM synthesis complete")
+    Logger->>Context: get_correlation_id()
+    Service-->>Router: Return LinkAnalysisResponse
+    Router-->>MW: Return HTTP Response
+    MW-->>Client: HTTP 200 OK (Response Header: X-Correlation-ID)
 ```
+
+---
+
+## 4. Log Redaction & Security Masking
+
+To comply with OWASP security guidelines, the custom `JsonFormatter` automatically masks sensitive values:
+1. **API Keys:** Any string matching `GEMINI_API_KEY`, `OPENAI_API_KEY`, or `sk-...` / `AIza...` is replaced with `[REDACTED_API_KEY]`.
+2. **Authorization Headers:** Any `Bearer ...` token in headers or query strings is sanitized to `Bearer [REDACTED]`.
+3. **Internal IP Addresses:** Any private RFC 1918 IP discovered in error messages is sanitized before output.
+
+---
+*End of Structured JSON Logging Specification. Authored by Piyush Makhija for Dxora Technologies Evaluation.*
