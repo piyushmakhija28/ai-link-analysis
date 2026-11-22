@@ -1,34 +1,46 @@
-<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-11-22T08:30:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
   <diagram id="c4-system-context" name="C4 System Context">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
         <mxCell id="user" value="API Consumer&#xa;[Person]&#xa;Frontend / Evaluator / Curl" style="shape=mxgraph.c4.person2;fillColor=#08427B;strokeColor=#052E56;fontColor=#ffffff;align=center;" vertex="1" parent="1">
-          <mxGeometry x="80" y="260" width="160" height="180" as="geometry"/>
+          <mxGeometry x="60" y="260" width="160" height="180" as="geometry"/>
         </mxCell>
-        <mxCell id="api" value="ai-link-analysis API&#xa;[Software System: FastAPI :4000]&#xa;Website Extraction &amp; Gemini 1.5 Flash 5-Section BI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontStyle=1;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="360" y="270" width="240" height="160" as="geometry"/>
+        <mxCell id="api" value="ai-link-analysis API&#xa;[Software System: FastAPI :4000]&#xa;SSRF Defense, DOM Pruning &amp; Gemini 1.5 Flash / Fallbacks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="320" y="270" width="260" height="160" as="geometry"/>
         </mxCell>
         <mxCell id="dns" value="Public DNS Resolver&#xa;[External System]&#xa;Pre-flight DNS host inspection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="720" y="100" width="200" height="100" as="geometry"/>
+          <mxGeometry x="720" y="80" width="220" height="90" as="geometry"/>
         </mxCell>
-        <mxCell id="web" value="Target Website Server&#xa;[External System]&#xa;Serves public HTML (&lt;5MB, 10s SLA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="720" y="270" width="200" height="120" as="geometry"/>
+        <mxCell id="web" value="Target Website Server&#xa;[External System]&#xa;Serves public HTML (&lt;=5MB, 10s SLA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="210" width="220" height="100" as="geometry"/>
         </mxCell>
-        <mxCell id="gemini" value="Google Gemini Cloud API&#xa;[External System]&#xa;Gemini 1.5 Flash 5-in-1 Structured JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="720" y="440" width="200" height="120" as="geometry"/>
+        <mxCell id="gemini" value="Google Gemini Cloud API&#xa;[External System]&#xa;Primary: Gemini 1.5 Flash (Schema Steering)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="340" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="openai" value="OpenAI Cloud API&#xa;[External System]&#xa;Fallback: GPT-4o-mini (Circuit Breaker)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#666666;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="470" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="mock" value="Offline Mock Client&#xa;[Internal Component]&#xa;Deterministic Rule-based Fallback ($0.00)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c757d;strokeColor=#495057;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="600" width="220" height="90" as="geometry"/>
         </mxCell>
         <mxCell id="e1" value="POST /link-analysis {url}&#xa;[HTTPS/JSON]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="user" target="api">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e2" value="DNS getaddrinfo&#xa;[UDP/53]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="dns">
+        <mxCell id="e2" value="Pre-flight DNS&#xa;[UDP/53]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="dns">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e3" value="Stream HTML Content&#xa;[HTTPX Async]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="web">
+        <mxCell id="e3" value="Stream HTML (&lt;=5MB)&#xa;[HTTPX Async]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="web">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e4" value="Structured Prompt (&lt;8k tokens)&#xa;[REST HTTPS]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="gemini">
+        <mxCell id="e4" value="Single-Pass Prompt (&lt;8k tokens)&#xa;[Primary]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.6;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="gemini">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="Circuit Breaker Fallback&#xa;[Secondary]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="openai">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="Offline Mode&#xa;[Zero Cost]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="mock">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>

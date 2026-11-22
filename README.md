@@ -387,20 +387,55 @@ This repository contains an exhaustive **11-Level Enterprise Architecture Docume
 
 | Tier | Documentation Document | Description |
 |:---|:---|:---|
-| **Level 1** | [SRS.md](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/SRS.md) | IEEE Std 830-1998 System Requirements Specification (FR-001..015, NFR-001..008) |
-| **API Contract** | [openapi.yaml](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/openapi.yaml) | Formal OpenAPI 3.1.0 Contract with schemas, examples, and RFC 7807 problem details |
-| **Level 2** | [docs/01-prd.md](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/01-prd.md) | Product Requirements Document: Personas, User Journeys, Feature Matrix |
-| **Level 3** | [docs/02-hld.md](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/02-hld.md) | High-Level Design: C4 Context, Container, Component, and Data Flow DAG |
-| **Level 4** | [docs/06-adr/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/06-adr/) | 8 Architectural Decision Records (FastAPI, Gemini, HTTPX, SSRF, Pydantic, Pruning, Mock, RFC 7807) |
-| **Level 5** | [docs/lld/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/lld/) | Low-Level Design: Class Diagrams, Design Patterns, Service Contracts, Prompt Schemas |
-| **Level 6** | [docs/security/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/security/) | Security: STRIDE Threat Model, 7-Stage SSRF Spec, Prompt Injection Fencing, OWASP API Top 10 |
-| **Level 7** | [docs/observability/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/observability/) | SRE & Observability: JSON Logging, SRE Health Probes, Token & Cost Telemetry |
-| **Level 8** | [docs/architecture/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/architecture/) | Deep-Dives: 7-Pillar Token Optimization Architecture, Exception Hierarchy |
-| **Level 9** | [docs/testing/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/testing/) | Testing Strategy: 11-Layer Test Pyramid, Triad Test Catalog, Hermetic Mocking Strategy |
-| **Level 10** | [docs/devops/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/devops/) | DevOps: Multi-Stage Non-Root Dockerfile, GitHub Actions CI/CD, Render Cloud Guide |
-| **Level 11** | [docs/management/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/management/) | Governance: Requirements Traceability Matrix, Service DAG, 6-Sprint Roadmap |
-| **UML Diagrams** | [uml/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/uml/) | 13 Formal Mermaid UML Diagrams (C4 Context, Container, Component, Class, Sequence, State, etc.) |
-| **Draw.io Files**| [docs/diagrams/](file:///C:/Users/techd/Documents/workspace-spring-tool-suite-4-4.27.0-new/ai-link-analysis/docs/diagrams/) | 8 Native Editable `.drawio` XML Diagrams compatible with draw.io and VS Code |
+| **Level 1** | [SRS.md](SRS.md) | IEEE Std 830-1998 System Requirements Specification (FR-001..027, NFR-001..011, FSM State Machine, RFC 7807 Error Dictionary) |
+| **API Contract** | [openapi.yaml](openapi.yaml) | Formal OpenAPI 3.1.0 Contract with schemas, examples, parameters, and RFC 7807 problem details |
+| **Level 2** | [docs/01-prd.md](docs/01-prd.md) | Product Requirements Document: Personas, User Journeys, Edge Cases (SPAs, Cloudflare, IDN), Feature Matrix, HEART Metrics |
+| **Level 3** | [docs/02-hld.md](docs/02-hld.md) | High-Level Design: C4 Context, Container, Component, Concurrency Model, DNS Thread Offloading, Failure Mode Matrix |
+| **Level 4** | [docs/06-adr/](docs/06-adr/) | 8 Architectural Decision Records (FastAPI, Gemini Flash & Fallbacks, HTTPX, SSRF, Pydantic, Pruning, Mock, RFC 7807) |
+| **Level 5** | [docs/lld/](docs/lld/) | Low-Level Design: Class Diagrams (01), Design Patterns (02), Service Contracts (03), Prompt Engineering (04), Package Structure (05) |
+| **Level 6** | [docs/security/](docs/security/) | Security Architecture: STRIDE Threat Model & CVSS 3.1 (01), 7-Stage SSRF Spec (02), Indirect Prompt Injection (03), OWASP API & LLM Top 10 (04) |
+| **Level 7** | [docs/observability/](docs/observability/) | SRE & Observability: ECS JSON Logging (01), SRE Health Probes (02), Token Economics & Cost Telemetry (03) |
+| **Level 8** | [docs/architecture/](docs/architecture/) | Deep-Dives: LLM Research & Benchmark, 7-Pillar Cost Optimization Architecture, RFC 7807 Exception Hierarchy |
+| **Level 9** | [docs/testing/](docs/testing/) | Testing Strategy: 11-Layer Test Pyramid (01), 35+ Triad Test Cases Catalog (02), Hermetic Mocking Strategy (03) |
+| **Level 10** | [docs/devops/](docs/devops/) | DevOps: Multi-Stage Non-Root Dockerfile (01), GitHub Actions 6-Gate CI/CD (02), Render.com Cloud Deployment Guide (03) |
+| **Level 11** | [docs/management/](docs/management/) | Governance: Bidirectional Requirements Traceability Matrix (01), Service DAG & Latency Budgets (02), 6-Sprint Roadmap (03) |
+
+---
+
+## 📐 Unified Diagram Suite (13 UML Diagrams & 8 Draw.io Topology Diagrams)
+
+### 1. 13 Formal Mermaid UML Diagrams (`uml/`)
+
+| # | Diagram Name & Link | Architecture View & Purpose |
+|:---:|:---|:---|
+| **01** | [uml/01-system-context-c4.md](uml/01-system-context-c4.md) | C4 Level 1 System Context Diagram (Actors, API, DNS, Target Web, Gemini, OpenAI, Mock) |
+| **02** | [uml/02-container-diagram-c4.md](uml/02-container-diagram-c4.md) | C4 Level 2 Container Diagram (Docker non-root boundary, ASGI, Middleware, Cache, SSRF, Extractor) |
+| **03** | [uml/03-component-diagram-c4.md](uml/03-component-diagram-c4.md) | C4 Level 3 Component Diagram (Routers, Orchestrator, Factory, Dual-Engine Clients, Circuit Breaker) |
+| **04** | [uml/04-class-diagram.md](uml/04-class-diagram.md) | Class Diagram (Settings, ValidatedUrlTarget, SSRFValidator, BaseLLMClient, CircuitBreaker, CacheService) |
+| **05** | [uml/05-sequence-diagram-link-analysis.md](uml/05-sequence-diagram-link-analysis.md) | Sequence Diagram: End-to-End Link Analysis Workflow (Ingress, Cache, SSRF, Scraping, Dual-Engine, Delivery) |
+| **06** | [uml/06-sequence-diagram-ssrf-validation.md](uml/06-sequence-diagram-ssrf-validation.md) | Sequence Diagram: 7-Stage Zero-Trust SSRF Validation (Scheme, Host, Port, Async DNS, CIDR Match, Pinning) |
+| **07** | [uml/07-sequence-diagram-llm-extraction.md](uml/07-sequence-diagram-llm-extraction.md) | Sequence Diagram: LLM Synthesis with Circuit Breaker (Gemini 1.5 Flash $\to$ OpenAI GPT-4o-mini $\to$ Mock) |
+| **08** | [uml/08-activity-diagram-orchestrator.md](uml/08-activity-diagram-orchestrator.md) | Activity Diagram: Master Orchestrator Decision Flow with Error Boundaries and Fallback Transitions |
+| **09** | [uml/09-state-diagram-analysis-lifecycle.md](uml/09-state-diagram-analysis-lifecycle.md) | State Diagram: Microservice Request Lifecycle Finite State Machine (FSM) from Ingress to RFC 7807 |
+| **10** | [uml/10-package-diagram.md](uml/10-package-diagram.md) | Package Diagram: Clean Architecture Unidirectional Dependencies (`routers` $\to$ `services` $\to$ `domain`) |
+| **11** | [uml/11-deployment-diagram.md](uml/11-deployment-diagram.md) | Deployment Diagram: Cloud Native Container Topology on Render.com & Local Docker |
+| **12** | [uml/12-security-threat-data-flow.md](uml/12-security-threat-data-flow.md) | Security Data Flow Diagram: STRIDE Threat Mitigations (SSRF, Prompt Injection, 5MB Ceiling) |
+| **13** | [uml/13-observability-telemetry-flow.md](uml/13-observability-telemetry-flow.md) | Observability Flow: ECS JSON Logging, `contextvars` Correlation ID, and Prometheus Telemetry |
+
+### 2. 8 Native Editable Draw.io Diagrams (`docs/diagrams/`)
+
+Compatible with [diagrams.net](https://app.diagrams.net) and the VS Code Draw.io extension:
+
+| # | Diagram File & Link | Architecture View & Contents |
+|:---:|:---|:---|
+| **D1** | [docs/diagrams/c4-system-context.drawio](docs/diagrams/c4-system-context.drawio) | C4 System Context: API Consumers, FastAPI System, DNS, Target Web, Gemini, OpenAI, Mock |
+| **D2** | [docs/diagrams/c4-container.drawio](docs/diagrams/c4-container.drawio) | C4 Container: Non-root Docker boundary, Uvicorn, FastAPI, Cache, SSRF, Extractor, Circuit Breaker |
+| **D3** | [docs/diagrams/c4-component.drawio](docs/diagrams/c4-component.drawio) | C4 Component: Presentation, Core Service Orchestration, and Infrastructure/Security Tiers |
+| **D4** | [docs/diagrams/class-architecture.drawio](docs/diagrams/class-architecture.drawio) | Class Architecture: Orchestrator, SSRFValidator, Extractor, LLM Strategies, Cache, Circuit Breaker |
+| **D5** | [docs/diagrams/data-flow-dag.drawio](docs/diagrams/data-flow-dag.drawio) | Execution DAG: 8-Stage Sequential Data Flow with Cache Bypass, SSRF, Fetch, Prune, LLM, Store |
+| **D6** | [docs/diagrams/ssrf-security-pipeline.drawio](docs/diagrams/ssrf-security-pipeline.drawio) | SSRF Pipeline: 7-Stage Zero-Trust Flow (Scheme, Host, Port, DNS, CIDR, Socket Pinning, 5MB Limit) |
+| **D7** | [docs/diagrams/token-optimization-pipeline.drawio](docs/diagrams/token-optimization-pipeline.drawio) | 7-Pillar Token Engine: DOM Pruner, Semantic Isolation, Token Ceiling, Single-Pass, Schema, Cache, Mock |
+| **D8** | [docs/diagrams/deployment-topology.drawio](docs/diagrams/deployment-topology.drawio) | Deployment Topology: Render Edge Load Balancer, Non-Root Container, Google Cloud, OpenAI |
 
 ---
 

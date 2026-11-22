@@ -1,29 +1,38 @@
-<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
-  <diagram id="token-optimization-pipeline" name="Token Optimization Pipeline">
+<mxfile host="app.diagrams.net" modified="2026-11-22T08:40:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="token-optimization-pipeline" name="7-Pillar Token Optimization">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
-        <mxCell id="p1" value="Pillar 1: DOM Tag Pruning&#xa;Strip scripts, styles, nav, footers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="80" y="80" width="220" height="60" as="geometry"/>
+        <mxCell id="p1" value="Pillar 1: DOM Tag Pruner&#xa;(Strip scripts, styles, SVGs, nav)&#xa;[85% Byte Reduction]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="220" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p2" value="Pillar 2: Semantic Text Isolation&#xa;Extract title, meta, OG, JSON-LD, headings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="80" y="170" width="220" height="60" as="geometry"/>
+        <mxCell id="p2" value="Pillar 2: Semantic Text Isolation&#xa;(Title, meta description, JSON-LD, headings)&#xa;[High Signal Density]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="100" width="240" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p3" value="Pillar 3: Character Budget Cap&#xa;Enforce ceiling &lt;32,000 chars (&lt;8k tokens)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="80" y="260" width="220" height="60" as="geometry"/>
+        <mxCell id="p3" value="Pillar 3: Ingress Token Ceiling&#xa;(Cap &lt;32,000 chars / &lt;8k tokens)&#xa;[Guarantees $0.075 Tier]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="100" width="220" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p4" value="Pillar 4: Single Consolidated Prompt&#xa;5-in-1 query saves 80% input tokens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="360" y="80" width="240" height="60" as="geometry"/>
+        <mxCell id="p4" value="Pillar 4: Single-Pass Prompt&#xa;(Consolidates 5 sections in 1 call)&#xa;[80% Input Token Savings]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2A7A2A;strokeColor=#82b366;fontColor=#ffffff;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="100" width="220" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p5" value="Pillar 5: Native Schema Steering&#xa;response_mime_type='application/json'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="360" y="170" width="240" height="60" as="geometry"/>
+        <mxCell id="p5" value="Pillar 5: Native Schema Steering&#xa;(response_schema parameter)&#xa;[Saves 1,500 Few-Shot Tokens]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="180" y="240" width="220" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p6" value="Pillar 6: SHA-256 URL TTL Cache&#xa;24h caching serves hits in 2ms at $0.00" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="360" y="260" width="240" height="60" as="geometry"/>
+        <mxCell id="p6" value="Pillar 6: SHA-256 URL Cache&#xa;(24h TTL Memory Store)&#xa;[&lt;2ms Hit @ $0.000000]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2A7A2A;strokeColor=#82b366;fontColor=#ffffff;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="240" width="220" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="p7" value="Pillar 7: Real-Time Telemetry&#xa;Auditability: $0.00105 / live request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
-          <mxGeometry x="660" y="170" width="220" height="60" as="geometry"/>
+        <mxCell id="p7" value="Pillar 7: Offline Mock Adapter&#xa;(Deterministic CI &amp; Local Test Engine)&#xa;[$0.00 Development Cost]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="720" y="240" width="220" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="p2" target="p3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="p3" target="p4">
+          <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>
     </mxGraphModel>

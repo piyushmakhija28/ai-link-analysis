@@ -1,28 +1,40 @@
-<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-11-22T08:35:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
   <diagram id="class-architecture" name="Class Architecture">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
-        <mxCell id="c_orch" value="AnalysisOrchestrator&#xa;--&#xa;- ssrf_validator: SSRFValidator&#xa;- extractor: BaseContentExtractor&#xa;- llm_client: BaseLLMClient&#xa;- cache: CacheService&#xa;--&#xa;+ analyze_link(url, corr_id) LinkAnalysisResponse" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="100" y="100" width="280" height="150" as="geometry"/>
+        <mxCell id="c_orch" value="AnalysisOrchestrator&#xa;--&#xa;-_ssrf_validator: SSRFValidator&#xa;-_extractor: BaseWebsiteExtractor&#xa;-_primary_llm: BaseLLMClient&#xa;-_fallback_llm: BaseLLMClient&#xa;-_circuit_breaker: CircuitBreaker&#xa;-_cache_service: AnalysisCacheService&#xa;--&#xa;+analyze_link(request, correlation_id): LinkAnalysisResponse" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#1168BD;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="360" height="170" as="geometry"/>
         </mxCell>
-        <mxCell id="c_ext" value="&lt;&lt;interface&gt;&gt; BaseContentExtractor&#xa;--&#xa;+ extract(url: str) PrunedDocument" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="460" y="100" width="240" height="80" as="geometry"/>
+        <mxCell id="c_ssrf" value="SSRFValidator&#xa;--&#xa;+validate_target_url(url: str): ValidatedUrlTarget&#xa;-_validate_scheme(scheme: str)&#xa;-_validate_port(port: int, scheme: str)&#xa;-_resolve_and_validate_ips(host: str)&#xa;-_is_ip_blacklisted(ip) bool" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#D9534F;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="280" height="150" as="geometry"/>
         </mxCell>
-        <mxCell id="c_ext_impl" value="HtmlSemanticExtractor&#xa;--&#xa;- client: httpx.AsyncClient&#xa;- pruner: DOMPruner&#xa;--&#xa;+ extract(url: str) PrunedDocument" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="460" y="240" width="240" height="120" as="geometry"/>
+        <mxCell id="c_extractor" value="BaseWebsiteExtractor &lt;&lt;interface&gt;&gt;&#xa;--&#xa;+fetch_and_prune(url, correlation_id)*: PrunedDocument" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#F0AD4E;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="360" y="260" width="340" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="c_llm" value="&lt;&lt;interface&gt;&gt; BaseLLMClient&#xa;--&#xa;+ analyze(content) AnalysisResult" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="760" y="100" width="240" height="80" as="geometry"/>
+        <mxCell id="c_llm" value="BaseLLMClient &lt;&lt;interface&gt;&gt;&#xa;--&#xa;+analyze(doc, correlation_id)*: LinkAnalysisPayload&#xa;+get_provider_name()*: str" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#5BC0DE;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="740" y="260" width="340" height="90" as="geometry"/>
         </mxCell>
-        <mxCell id="c_gemini" value="GeminiClient&#xa;--&#xa;- client: genai.Client&#xa;- model: str&#xa;--&#xa;+ analyze(content) AnalysisResult" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="760" y="240" width="240" height="120" as="geometry"/>
+        <mxCell id="c_cache" value="AnalysisCacheService&#xa;--&#xa;-_cache: dict&#xa;-_default_ttl_seconds: int&#xa;--&#xa;+get(url: str): Optional[LinkAnalysisResponse]&#xa;+set(url: str, response, ttl): None" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#2A7A2A;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="360" y="400" width="320" height="130" as="geometry"/>
         </mxCell>
-        <mxCell id="rel1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="c_ext_impl" target="c_ext">
+        <mxCell id="c_cb" value="CircuitBreaker&#xa;--&#xa;-_state: CircuitState&#xa;-_failure_count: int&#xa;--&#xa;+call(coro, *args): Any&#xa;+trip(): None&#xa;+reset(): None" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#6f42c1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="740" y="400" width="260" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_ssrf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_orch" target="c_ssrf">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="rel2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="c_gemini" target="c_llm">
+        <mxCell id="e_orch_ext" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_orch" target="c_extractor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_llm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_orch" target="c_llm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_orch" target="c_cache">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_orch_cb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_orch" target="c_cb">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>

@@ -1,41 +1,64 @@
-<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-11-22T08:40:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
   <diagram id="data-flow-dag" name="Data Flow DAG">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
-        <mxCell id="n1" value="1. Client Request&#xa;POST /link-analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="60" y="200" width="140" height="60" as="geometry"/>
+        <mxCell id="n1" value="1. Request Ingress&#xa;POST /link-analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="130" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n2" value="2. Correlation ID &amp;&#xa;Cache Check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="240" y="200" width="140" height="60" as="geometry"/>
+        <mxCell id="n2" value="2. Context Injection&#xa;UUID4 Correlation ID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="190" y="200" width="130" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n3" value="3. SSRF Defense&#xa;(DNS &amp; Subnet Filter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
-          <mxGeometry x="420" y="200" width="140" height="60" as="geometry"/>
+        <mxCell id="n3" value="3. Cache Check&#xa;SHA-256 URL Hash" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="190" width="120" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="n4" value="4. Async HTTPX Fetch&#xa;(&lt;5MB, 10s SLA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="600" y="200" width="140" height="60" as="geometry"/>
+        <mxCell id="n4" value="4. SSRF Defense&#xa;7-Stage Security Check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="480" y="200" width="140" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n5" value="5. DOM Pruner &amp; XML Fencer&#xa;(&lt;8k tokens budget)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="780" y="200" width="160" height="60" as="geometry"/>
+        <mxCell id="n5" value="5. Async HTTPX Fetch&#xa;&lt;=5MB Ceiling, 10s SLA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="640" y="200" width="140" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n6" value="6. Gemini 1.5 Flash&#xa;5-in-1 Structured BI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
-          <mxGeometry x="980" y="200" width="140" height="60" as="geometry"/>
+        <mxCell id="n6" value="6. DOM Pruning&#xa;Cap &lt;32k chars / &lt;8k tokens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" y="200" width="150" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="n1" target="n2">
+        <mxCell id="n7" value="7. Circuit Breaker&#xa;Gemini 1.5 Flash / Fallbacks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="970" y="200" width="160" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="n8" value="8. Cache Store &amp; Delivery&#xa;24h TTL, Telemetry ($0.001)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="340" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1" target="n2">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="n2" target="n3">
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2" target="n3">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="n3" target="n4">
+        <mxCell id="e3_miss" value="Cache Miss" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3" target="n4">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="n4" target="n5">
+        <mxCell id="e3_hit" value="Cache Hit (&lt;5ms)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="n3" target="n8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="370"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n4" target="n5">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="n5" target="n6">
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n5" target="n6">
           <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n6" target="n7">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="n7" target="n8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1050" y="370"/>
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

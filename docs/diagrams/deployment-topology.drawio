@@ -1,25 +1,46 @@
-<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-11-22T08:40:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
   <diagram id="deployment-topology" name="Deployment Topology">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
-        <mxCell id="cloud" value="Render.com Cloud (Oregon Region)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="120" y="80" width="600" height="340" as="geometry"/>
+        <mxCell id="client" value="Client Environment&#xa;[Browser / Curl / Pipeline]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="220" width="160" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="lb" value="Render TLS Edge Proxy&#xa;Let's Encrypt HTTPS / 443" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="cloud">
-          <mxGeometry x="40" y="60" width="200" height="60" as="geometry"/>
+        <mxCell id="render" value="Render.com Cloud Infrastructure (Oregon Region)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="480" height="380" as="geometry"/>
         </mxCell>
-        <mxCell id="container" value="Docker Container (appuser:10001)&#xa;Uvicorn ASGI (:4000)&#xa;FastAPI App &amp; In-Memory Cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="cloud">
-          <mxGeometry x="40" y="180" width="240" height="100" as="geometry"/>
+        <mxCell id="lb" value="Render Cloud Edge Load Balancer&#xa;[TLS 1.3 &amp; DDoS Protection]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;" vertex="1" parent="render">
+          <mxGeometry x="40" y="50" width="400" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="web" value="Public Internet Websites&#xa;[Ports 80 &amp; 443]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="800" y="100" width="200" height="80" as="geometry"/>
+        <mxCell id="docker" value="OCI Docker Container (non-root appuser:10001)&#xa;[Uvicorn ASGI Server : Port 4000]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;fontColor=#ffffff;fontStyle=1;" vertex="1" parent="render">
+          <mxGeometry x="40" y="160" width="400" height="90" as="geometry"/>
         </mxCell>
-        <mxCell id="gemini" value="Google Gemini API&#xa;[Gemini 1.5 Flash]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
-          <mxGeometry x="800" y="240" width="200" height="80" as="geometry"/>
+        <mxCell id="cache" value="In-Memory SHA-256 Cache (24h TTL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#2A7A2A;fontColor=#ffffff;" vertex="1" parent="render">
+          <mxGeometry x="140" y="280" width="200" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="c_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="cloud" source="lb" target="container">
+        <mxCell id="gemini" value="Google Gemini Cloud API&#xa;[Gemini 1.5 Flash]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="840" y="120" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="openai" value="OpenAI Cloud API&#xa;[GPT-4o-mini Fallback]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="840" y="240" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="web" value="Target Website Server&#xa;[Public Web]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="840" y="360" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="HTTPS POST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="client" target="lb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="Reverse Proxy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="render" source="lb" target="docker">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="docker" target="gemini">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="docker" target="openai">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="docker" target="web">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>

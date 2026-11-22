@@ -1,35 +1,61 @@
-# UML 08: Activity Diagram - Analysis Orchestrator DAG
+# UML 08: Activity Diagram - Master Analysis Orchestrator Workflow
 
 ```mermaid
 flowchart TD
-    Start([Start: Ingress POST /link-analysis]) --> CheckCache{"URL in Cache?"}
-    CheckCache -->|Yes| Hit[Fetch from Cache in <5ms]
-    Hit --> EnrichTelemetry[Enrich with Cache Telemetry]
-    EnrichTelemetry --> Return[Return HTTP 200 JSON]
-
-    CheckCache -->|No| ValidateFormat{"Valid RFC 3986 & http/https?"}
-    ValidateFormat -->|No| ErrScheme[Raise InvalidUrlSchemeException]
-    ValidateFormat -->|Yes| ValidatePort{"Port in 80, 443?"}
-    ValidatePort -->|No| ErrPort[Raise ProhibitedPortException]
-    ValidatePort -->|Yes| ResolveDNS[Resolve Host via socket.getaddrinfo]
-    ResolveDNS --> CheckBlacklist{"Any Resolved IP in Blacklist?"}
-    CheckBlacklist -->|Yes: RFC 1918 / 169.254.169.254| ErrSSRF[Raise SsrfViolationException]
-    CheckBlacklist -->|No: Safe IP| StreamFetch[Async HTTPX Fetch with 10s Timeout]
-
-    StreamFetch --> CheckSize{"Body Size > 5MB?"}
-    CheckSize -->|Yes| ErrSize[Raise WebsitePayloadTooLargeException]
-    CheckSize -->|No| PruneDOM[BeautifulSoup4: Strip Scripts, Styles, Nav, Footers]
-
-    PruneDOM --> ExtractMeta[Extract Title, Meta, OG, Headings, Paragraphs]
-    ExtractMeta --> CapBudget[Enforce Character Cap <32k chars / <8k tokens]
-    CapBudget --> FencePrompt[Wrap in untrusted_scraped_website_content XML Tags]
-
-    FencePrompt --> CallLLM[Invoke Gemini 1.5 Flash via google-genai]
-    CallLLM --> CheckRateLimit{"Upstream 429 or No Key?"}
-    CheckRateLimit -->|Yes| FallbackMock[Execute Deterministic Offline Mock Engine]
-    CheckRateLimit -->|No| ParseSchema[Pydantic v2 LinkAnalysisResponse Validation]
-
-    FallbackMock --> StoreCache[Store in Cache with 24h TTL]
-    ParseSchema --> StoreCache
-    StoreCache --> Return
+    Start([Start: Ingress Request POST /link-analysis]) --> InjectCID[Inject / Propagate X-Correlation-ID UUID4]
+    InjectCID --> CheckCache{SHA-256 URL Cache Hit?}
+    
+    CheckCache -->|Yes: Valid TTL| BuildCachedResp[Extract Cached Payload & Set cached=true]
+    BuildCachedResp --> ReturnSuccess([End: Return HTTP 200 OK])
+    
+    CheckCache -->|No: Cache Miss| ValidateSyntax{RFC 3986 Syntax & Scheme Valid?}
+    ValidateSyntax -->|No| ErrSyntax[Return HTTP 400 ERR_UNSUPPORTED_SCHEME]
+    ErrSyntax --> ReturnError([End: RFC 7807 Problem Details])
+    
+    ValidateSyntax -->|Yes| CheckPort{Port in 80, 443?}
+    CheckPort -->|No| ErrPort[Return HTTP 400 ERR_DISALLOWED_PORT]
+    ErrPort --> ReturnError
+    
+    CheckPort -->|Yes| ResolveDNS[Async DNS Resolution socket.getaddrinfo]
+    ResolveDNS --> CheckDNS{DNS Succeeded?}
+    CheckDNS -->|No| ErrDNS[Return HTTP 502 ERR_WEBSITE_UNREACHABLE]
+    ErrDNS --> ReturnError
+    
+    CheckDNS -->|Yes| FilterSubnet{Resolved IP in Blacklist CIDRs?}
+    FilterSubnet -->|Yes: Loopback / Private / Metadata| ErrSSRF[Return HTTP 400 ERR_SSRF_BLOCKED]
+    ErrSSRF --> ReturnError
+    
+    FilterSubnet -->|No: Public IP| StreamHTML[Async HTTPX Chunk Streaming GET]
+    StreamHTML --> CheckSize{Payload <= 5MB?}
+    CheckSize -->|No: >5MB| ErrSize[Return HTTP 413 ERR_PAYLOAD_TOO_LARGE]
+    ErrSize --> ReturnError
+    
+    CheckSize -->|Yes| CheckTimeout{Response within 10s SLA?}
+    CheckTimeout -->|No| ErrTimeout[Return HTTP 504 ERR_UPSTREAM_TIMEOUT]
+    ErrTimeout --> ReturnError
+    
+    CheckTimeout -->|Yes| PruneDOM[BeautifulSoup Tag Pruning & Budgeting]
+    PruneDOM --> CheckText{Extractable Text Found?}
+    CheckText -->|No: Blank / Pure SPA| ErrBlank[Return HTTP 422 ERR_EMPTY_WEBSITE_CONTENT]
+    ErrBlank --> ReturnError
+    
+    CheckText -->|Yes: Clean Text <32k chars| BuildPrompt[Wrap in XML Fencing & Inject Negative Constraints]
+    BuildPrompt --> CheckCB{Circuit Breaker State?}
+    
+    CheckCB -->|CLOSED| CallGemini[Invoke Google Gemini 1.5 Flash]
+    CallGemini --> CheckGemini{Gemini Succeeded?}
+    
+    CheckGemini -->|Yes| ValidPayload[Parse Valid LinkAnalysisPayload]
+    CheckGemini -->|No: 429/503/Timeout| TripCB[Record Failure & Call Fallback]
+    
+    CheckCB -->|OPEN| TripCB
+    TripCB --> CallOpenAI{OpenAI Configured?}
+    CallOpenAI -->|Yes| InvokeOpenAI[Invoke OpenAI GPT-4o-mini]
+    InvokeOpenAI --> ValidPayload
+    CallOpenAI -->|No / Failed| InvokeMock[Invoke OfflineMockClient]
+    InvokeMock --> ValidPayload
+    
+    ValidPayload --> StoreCache[Store in Cache SHA-256 with 24h TTL]
+    StoreCache --> EnrichTelemetry[Calculate Latency, Tokens & Cost USD/INR]
+    EnrichTelemetry --> ReturnSuccess
 ```

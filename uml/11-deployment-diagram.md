@@ -1,37 +1,49 @@
-# UML 11: Deployment Diagram
+# UML 11: Deployment Diagram - Cloud Native Container Topology
 
 ```mermaid
-deployment
-    title Deployment Architecture on Render.com Cloud Platform
+deploymentDiagram
+    title Deployment Topology on Render.com & Local Docker
 
-    node RenderCloud as "Render.com Cloud (Oregon Region)" {
-        node LoadBalancer as "Render Managed TLS Edge / Proxy" {
-            artifact SSL as "Automatic Let's Encrypt SSL/TLS Certificate"
+    node ClientNode as "Client Host / Evaluator Environment" {
+        artifact CurlClient as "HTTP Client / Curl / Web Browser"
+    }
+
+    cloud CloudPlatform as "Render.com Cloud Infrastructure (Oregon Region)" {
+        node LoadBalancer as "Render Cloud Edge Load Balancer" {
+            artifact TLSProxy as "TLS 1.3 Termination & DDoS Mitigation"
         }
 
-        node DockerContainer as "Docker Container (non-root appuser:10001)" {
-            artifact UvicornServer as "Uvicorn ASGI Server (:4000)"
-            artifact FastAPIApp as "FastAPI Application (Python 3.13)"
-            artifact CacheMem as "In-Memory LRU Cache Store"
+        node ContainerHost as "Linux Container Host (Debian Bookworm)" {
+            node OCIContainer as "Docker Container (ai-link-analysis)" {
+                artifact UserContext as "Unprivileged User (appuser:10001)"
+                artifact UvicornWorker as "Uvicorn ASGI Worker Process (:4000)"
+                artifact MemoryCache as "In-Memory SHA-256 Cache"
+            }
         }
     }
 
-    node ExternalWeb as "Internet / Public Web" {
-        node TargetServers as "Target Public Websites (:80, :443)"
+    cloud GoogleCloud as "Google Cloud Platform" {
+        node GeminiService as "Google Gemini API Service" {
+            artifact GeminiModel as "Gemini 1.5 Flash Model Endpoint"
+        }
     }
 
-    node GoogleCloud as "Google Cloud Platform" {
-        node GeminiService as "Gemini 1.5 Flash Cloud API"
+    cloud OpenAIService as "OpenAI Cloud Platform" {
+        node OpenAIServiceNode as "OpenAI API Service" {
+            artifact GPTMiniModel as "GPT-4o-mini Model Endpoint"
+        }
     }
 
-    node ClientNode as "Client Node" {
-        artifact CurlPostman as "HTTP Client (Browser, Curl, Evaluator)"
+    cloud PublicWeb as "Target Public Internet" {
+        node TargetWebServer as "Target Public Web Server" {
+            artifact WebPage as "HTML / CSS / Schema.org Assets"
+        }
     }
 
-    ClientNode --> LoadBalancer : "HTTPS / 443"
-    LoadBalancer --> UvicornServer : "HTTP / 4000 (Internal Bridge)"
-    UvicornServer --> FastAPIApp : "ASGI Event Loop"
-    FastAPIApp --> CacheMem : "Read / Write"
-    FastAPIApp --> TargetServers : "Outbound HTTP/HTTPS (<5MB Stream)"
-    FastAPIApp --> GeminiService : "Outbound HTTPS REST (<8k Tokens)"
+    CurlClient --> TLSProxy : "HTTPS POST /link-analysis"
+    TLSProxy --> UvicornWorker : "Forward to :4000 (Internal Bridge)"
+    UvicornWorker --> MemoryCache : "Query & Store (24h TTL)"
+    UvicornWorker --> TargetWebServer : "Async Streaming GET (<=5MB, 10s SLA)"
+    UvicornWorker --> GeminiModel : "Primary: Single-Pass Prompt (HTTPS REST)"
+    UvicornWorker -.-> GPTMiniModel : "Fallback: Circuit Breaker Query (HTTPS REST)"
 ```

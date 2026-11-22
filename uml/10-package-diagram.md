@@ -1,41 +1,35 @@
-# UML 10: Package Diagram
+# UML 10: Package Diagram - Clean Architecture Dependencies
 
 ```mermaid
 graph TD
-    subgraph AppPackage["app/"]
-        Main["app.main"]
-        Config["app.config"]
-        Constants["app.constants"]
-        Exceptions["app.exceptions"]
-        Logger["app.logger"]
-        Schemas["app.schemas"]
-
-        subgraph Routers["app.routers"]
-            AnalysisRouter["analysis.py"]
-            HealthRouter["health.py"]
-        end
-
-        subgraph Services["app.services"]
-            Extractor["website_extractor.py"]
-            LLMService["llm_service.py"]
-            Orchestrator["analysis_orchestrator.py"]
-            Cache["cache_service.py"]
-        end
-
-        subgraph Utils["app.utils"]
-            SSRF["ssrf_validator.py"]
-        end
+    subgraph PresentationLayer["Presentation Layer (app.routers)"]
+        AnalysisRouter["app.routers.analysis"]
+        HealthRouter["app.routers.health"]
     end
 
-    Main --> Routers
-    AnalysisRouter --> Orchestrator
-    HealthRouter --> Config
-    Orchestrator --> Extractor
-    Orchestrator --> LLMService
-    Orchestrator --> Cache
-    Orchestrator --> SSRF
-    Orchestrator --> Schemas
-    Services --> Logger
-    Services --> Exceptions
-    Utils --> Constants
+    subgraph ApplicationLayer["Application Service Layer (app.services)"]
+        Orchestrator["app.services.analysis_orchestrator"]
+        CacheService["app.services.cache_service"]
+    end
+
+    subgraph InfrastructureLayer["Infrastructure Adapters (app.services & app.utils)"]
+        Extractor["app.services.website_extractor"]
+        LLMService["app.services.llm_service"]
+        SSRF["app.utils.ssrf_validator"]
+        Telemetry["app.utils.token_counter"]
+    end
+
+    subgraph DomainCore["Domain Core (Independent Models & Contracts)"]
+        Schemas["app.schemas (Pydantic v2 Models)"]
+        Exceptions["app.exceptions (RFC 7807 Exceptions)"]
+        Constants["app.constants (Subnet Blacklists)"]
+        Config["app.config (Settings & Env)"]
+        Logger["app.logger (ECS Structured JSON)"]
+    end
+
+    PresentationLayer --> ApplicationLayer
+    ApplicationLayer --> InfrastructureLayer
+    InfrastructureLayer --> DomainCore
+    ApplicationLayer --> DomainCore
+    PresentationLayer --> DomainCore
 ```

@@ -7,77 +7,125 @@ classDiagram
         +str app_env
         +int port
         +str gemini_api_key
-        +str llm_model
+        +str openai_api_key
+        +str primary_llm_model
+        +str fallback_llm_model
         +int max_content_length
-        +int request_timeout
-        +int cache_ttl
-        +list allowed_ports
-        +bool is_configured()
+        +float request_timeout_seconds
+        +int cache_ttl_seconds
+        +list~int~ allowed_ports
+        +list~str~ allowed_schemes
+        +bool is_gemini_configured() bool
+        +bool is_openai_configured() bool
+    }
+
+    class ValidatedUrlTarget {
+        +str original_url
+        +str canonical_url
+        +str scheme
+        +str hostname
+        +int port
+        +list resolved_ips
     }
 
     class SSRFValidator {
-        +validate_url(url: str) str
-        -_check_scheme(parsed) void
-        -_check_hostname(host: str) void
-        -_resolve_dns_and_filter(host: str) list[str]
-        -_check_port(port: int) void
+        +validate_target_url(url: str) ValidatedUrlTarget
+        -_validate_scheme(scheme: str) None
+        -_validate_port(port: Optional~int~, scheme: str) int
+        -_resolve_and_validate_ips(hostname: str) list
+        -_is_ip_blacklisted(ip) bool
     }
 
-    class BaseContentExtractor {
+    class BaseWebsiteExtractor {
         <<interface>>
-        +extract(url: str) PrunedDocument*
+        +fetch_and_prune(url: str, correlation_id: str) PrunedDocument*
     }
 
-    class HtmlSemanticExtractor {
-        -httpx.AsyncClient client
-        -DOMPruner pruner
-        +extract(url: str) PrunedDocument
-        -_fetch_stream(url: str) str
+    class AsyncHTTPXWebsiteExtractor {
+        -httpx.AsyncClient _client
+        -DOMPruner _pruner
+        +fetch_and_prune(url: str, correlation_id: str) PrunedDocument
+        -_stream_html(url: str) tuple
     }
 
     class DOMPruner {
-        +prune_and_budget(raw_html: str, max_chars: int) PrunedDocument
-        -_strip_noise(soup) void
-        -_extract_semantic_meta(soup) dict
-        -_extract_headings_and_body(soup) str
+        -int _max_character_budget
+        +prune(raw_html: str, target_url: str) PrunedDocument
+        -_strip_unwanted_tags(soup) None
+        -_extract_head_metadata(soup) WebsiteMetadata
+        -_extract_body_headings_and_text(soup) str
+        -_truncate_to_budget(text: str) str
     }
 
     class BaseLLMClient {
         <<interface>>
-        +analyze(content: PrunedDocument) AnalysisResult*
+        +analyze(document: PrunedDocument, correlation_id: str) LinkAnalysisPayload*
+        +get_provider_name() str*
     }
 
-    class GeminiClient {
-        -genai.Client client
-        -str model_name
-        +analyze(content: PrunedDocument) AnalysisResult
-        -_build_prompt(content: PrunedDocument) str
+    class GeminiLLMClient {
+        -genai.Client _client
+        -str _model_name
+        +analyze(document: PrunedDocument, correlation_id: str) LinkAnalysisPayload
+        +get_provider_name() str
+        -_build_fenced_prompt(document: PrunedDocument) str
+    }
+
+    class OpenAIMiniLLMClient {
+        -openai.AsyncOpenAI _client
+        -str _model_name
+        +analyze(document: PrunedDocument, correlation_id: str) LinkAnalysisPayload
+        +get_provider_name() str
+        -_build_fenced_prompt(document: PrunedDocument) str
     }
 
     class OfflineMockClient {
-        +analyze(content: PrunedDocument) AnalysisResult
+        +analyze(document: PrunedDocument, correlation_id: str) LinkAnalysisPayload
+        +get_provider_name() str
+    }
+
+    class LLMClientFactory {
+        +create_primary_client(settings: Settings) BaseLLMClient$
+        +create_fallback_client(settings: Settings) BaseLLMClient$
+    }
+
+    class CircuitBreaker {
+        -int _failure_threshold
+        -float _recovery_timeout_seconds
+        -str _state
+        +call(coroutine_func, *args, **kwargs) Any
+        +trip() None
+        +reset() None
+    }
+
+    class AnalysisCacheService {
+        -dict _cache
+        -int _default_ttl_seconds
+        +get(url: str) Optional~LinkAnalysisResponse~
+        +set(url: str, response: LinkAnalysisResponse, ttl: Optional~int~) None
+        +clear() None
     }
 
     class AnalysisOrchestrator {
-        -SSRFValidator ssrf_validator
-        -BaseContentExtractor extractor
-        -BaseLLMClient llm_client
-        -CacheService cache_service
-        +analyze_link(url: str, correlation_id: str) LinkAnalysisResponse
+        -SSRFValidator _ssrf_validator
+        -BaseWebsiteExtractor _extractor
+        -BaseLLMClient _primary_llm
+        -BaseLLMClient _fallback_llm
+        -CircuitBreaker _circuit_breaker
+        -AnalysisCacheService _cache_service
+        +analyze_link(request: LinkAnalysisRequest, correlation_id: str) LinkAnalysisResponse
     }
 
-    class CacheService {
-        -dict _memory_store
-        +get(url: str) Optional[LinkAnalysisResponse]
-        +set(url: str, data: LinkAnalysisResponse, ttl: int) void
-    }
-
-    BaseContentExtractor <|.. HtmlSemanticExtractor
-    HtmlSemanticExtractor --> DOMPruner
-    BaseLLMClient <|.. GeminiClient
+    BaseWebsiteExtractor <|.. AsyncHTTPXWebsiteExtractor
+    AsyncHTTPXWebsiteExtractor --> DOMPruner
+    BaseLLMClient <|.. GeminiLLMClient
+    BaseLLMClient <|.. OpenAIMiniLLMClient
     BaseLLMClient <|.. OfflineMockClient
+    LLMClientFactory ..> BaseLLMClient
     AnalysisOrchestrator --> SSRFValidator
-    AnalysisOrchestrator --> BaseContentExtractor
+    AnalysisOrchestrator --> BaseWebsiteExtractor
     AnalysisOrchestrator --> BaseLLMClient
-    AnalysisOrchestrator --> CacheService
+    AnalysisOrchestrator --> CircuitBreaker
+    AnalysisOrchestrator --> AnalysisCacheService
+    SSRFValidator ..> ValidatedUrlTarget
 ```
