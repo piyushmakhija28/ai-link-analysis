@@ -73,7 +73,7 @@ The **AI-Powered Website Link Analysis API** automates this entire discovery cyc
 ## 4. Business & Technical Constraints
 
 1. **Zero Search Volume Hallucination:** Under Section 3 Note and Section 9 of the Dxora specification, numerical monthly search volumes must NEVER be fabricated or hallucinated. Search queries must focus on qualitative search intent, platform suitability, and audience relevance.
-2. **Cost Optimization:** Must utilize **Google Gemini 1.5 Flash** ($0.075/1M input, $0.30/1M output), executing a single multi-section query to ensure per-analysis cost remains around **$0.00105 (under 10 paise INR)**.
+2. **Cost Optimization & LLM Research:** Must utilize **Google Gemini 1.5 Flash** ($0.075/1M input, $0.30/1M output) as primary engine with **OpenAI GPT-4o-mini** fallback, executing a single multi-section query to ensure per-analysis cost remains around **$0.00105 (under 10 paise INR)**. Full empirical benchmark across 8 models and unit economics are documented in [docs/architecture/llm-model-research-benchmark.md](architecture/llm-model-research-benchmark.md).
 3. **Execution SLA:** Upstream website fetching must time out strictly after 10.0 seconds; LLM processing must complete within 5.0 seconds.
 
 ---

@@ -22,6 +22,7 @@
 | **Sec 3.4** | Section 4: Top 5 Services | FR-011 | Gemini Engine | `app/services/llm_service.py` | `test_llm_service.py` |
 | **Sec 3.5** | Section 5: Target Audience | FR-012 | Gemini Engine | `app/services/llm_service.py` | `test_llm_service.py` |
 | **Sec 2 & 9**| Deterministic Offline Mock Fallback| FR-013 | Mock Adapter | `app/services/llm_service.py` | `test_llm_service.py` |
+| **Sec 6.A-C**| LLM Research, Benchmark & Token Economics | NFR-008 | Architecture & Benchmark | `docs/architecture/llm-model-research-benchmark.md` | Benchmark Analysis & Unit Economics |
 | **Sec 6.C** | SHA-256 URL Cache (24h TTL) | FR-014 | Cache Engine | `app/services/cache_service.py` | `test_analysis_orchestrator.py`|
 | **Sec 8** | RFC 7807 Problem Details Error | FR-015 | Exception Handler | `app/exceptions.py` | `test_router_analysis.py` |
 | **Sec 11** | Public Deployment Blueprint | NFR-007 | Render IaC | `render.yaml`, `Dockerfile` | GitHub Actions CI |
