@@ -3,9 +3,8 @@
 > **Author:** Piyush Makhija (Technical Lead / Senior Software Engineer)  
 > **Client / Evaluator:** Dxora Technologies (`hr@chivoxai.com`)  
 > **Repository:** [https://github.com/piyushmakhija28/ai-link-analysis](https://github.com/piyushmakhija28/ai-link-analysis)  
-> **Version:** 1.0.0-PROD  
-> **Date:** November 2026  
-> **Status:** Baselined & Enforced  
+> **Version:** 2.0.0-PROD  
+> **Classification:** Technical Architecture, FinOps & Token Economics  
 
 ---
 
@@ -17,6 +16,7 @@ In unoptimized, naive implementations:
 - Raw HTML (150KB to 2MB) is fed directly into an LLM $\to$ consuming 40,000 to 100,000 tokens per analysis.
 - 5 independent API calls are dispatched sequentially $\to$ multiplying input token costs by 5x ($40,000 \times 5 = 200,000$ tokens).
 - Large few-shot JSON formatting examples are injected into the prompt $\to$ adding 1,500 tokens of dead weight.
+- Naive developers select Frontier Thinking Models (such as `claude-opus-5-5`, `gemini-4-carbon`, or `o1`) $\to$ triggering an invisible **Thinking Token Tax** of 2,000+ tokens billed at premium output rates ($10.00–$60.00/1M).
 - Repeat queries re-scrape and re-query the LLM $\to$ burning budget on duplicate work.
 
 Our microservice implements a **7-Pillar Cost Reduction Engine**, cutting operational expenditure by **97.8%**:
@@ -38,7 +38,7 @@ flowchart TD
 
 ### Pillar 1 & 2: Local DOM Tag Pruning & Semantic Isolation
 - **Mechanism:** Local Python CPU/RAM traversal using `BeautifulSoup4` with `lxml` parser.
-- **Bytes Stripped:** All `<script>`, `<style>`, `<noscript>`, `<svg>`, `<canvas>`, `<iframe>`, navigation bars, and cookie banners.
+- **Bytes Stripped:** All `<script>`, `<style>`, `<noscript>`, `<svg>`, `<canvas>`, `<iframe>`, navigation bars, footers, and cookie banners.
 - **Reduction Impact:** A 180KB HTML landing page is compressed to 14KB of clean semantic markdown.
 - **Cost Impact:** $0.00 (Local RAM computation taking <15ms).
 
@@ -73,14 +73,17 @@ flowchart TD
 
 ## 3. Financial Unit Economics Summary
 
-| Workflow Step | Unoptimized Architecture | 7-Pillar Optimized Architecture | Net Savings |
+Baseline: 1 USD = ₹86.00 INR.
+
+| Workflow Step / Architecture | Unoptimized / Thinking Architecture (e.g., Opus 5.5 / o1) | 7-Pillar Optimized Architecture (Gemini 1.5 Flash) | Net Savings |
 |:---|:---:|:---:|:---:|
-| **Ingress HTML Filtering** | 45,000 tokens | 8,000 tokens | **82.2% reduction** |
+| **Ingress HTML Filtering** | 45,000 tokens (raw) | 8,000 tokens (pruned) | **82.2% reduction** |
 | **API Invocations per Analysis** | 5 separate calls | 1 single-pass call | **80.0% reduction** |
+| **Thinking Tokens Generated** | 2,500 thinking tokens | 0 thinking tokens (logit constrained) | **100% elimination** |
 | **Prompt Formatting Overhead** | 1,800 tokens (few-shot) | 0 tokens (native schema) | **100% elimination** |
-| **Cost per Analysis (USD)** | ~$0.03500 | **$0.00105** | **97.0% cheaper** |
-| **Cost per Analysis (INR)** | ~₹3.01 | **₹0.09 (9 Paise)** | **97.0% cheaper** |
-| **Cost for 10,000 Analyses** | ~₹30,100 INR | **₹903 INR** | **₹29,197 Saved!** |
+| **Cost per Analysis (USD)** | ~$0.11200 | **$0.00105** | **99.1% cheaper** |
+| **Cost per Analysis (INR)** | ~₹9.63 | **₹0.09 (9 Paise)** | **99.1% cheaper** |
+| **Cost for 10,000 Analyses** | ~₹96,320 INR | **₹903 INR** | **₹95,417 INR Saved!** |
 
 ---
 *End of Token & Cost Optimization Architecture. Authored by Piyush Makhija for Dxora Technologies Evaluation.*

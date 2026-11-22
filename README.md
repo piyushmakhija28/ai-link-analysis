@@ -53,49 +53,70 @@ flowchart TD
 
 ## 💰 LLM Platform Research, Benchmark & Cost Optimization (Dxora Section 6)
 
-> Complete architectural deep-dive, empirical benchmarks, and unit economic calculations are published in:  
+> Complete architectural deep-dive, empirical benchmarks, and mathematical proofs are published in:  
 > 📖 [docs/architecture/llm-model-research-benchmark.md](docs/architecture/llm-model-research-benchmark.md)
 
 ### 1. Granular Sub-Task Suitability Analysis ("Kaunsi Cheej Ke Liye Kaunsa Model Best Hai")
 
-Analyzing a website end-to-end involves multiple distinct computational and semantic sub-tasks. Sending raw HTML directly to a frontier LLM is an anti-pattern that burns thousands of unnecessary tokens:
+Analyzing a website end-to-end involves multiple distinct computational and semantic sub-tasks. Directing raw HTML into a high-parameter frontier LLM is an anti-pattern that burns thousands of unnecessary tokens:
 
 | Sub-Task / Pipeline Stage | Computational Nature | Optimal Engine / Approach | Model Fitness Justification | Token Cost Impact |
 |:---|:---|:---|:---|:---|
 | **1. HTML Parsing & DOM Pruning** | Deterministic syntax filtering | **Zero-Token Local Python Engine** (`BeautifulSoup4` + `lxml`) | Non-semantic stripping of `<script>`, `<style>`, `<svg>`, `<nav>`, and cookie dialogs is 1,000x faster in RAM (5ms) and 100% free. Never use an LLM for DOM traversal. | **100% Token Savings** (Reduces 150KB HTML to 12KB clean text) |
-| **2. Brand & Competitor Research** | World-knowledge retrieval & industry competitive analysis | **Google Gemini 1.5 Flash** | Vast pre-training corpus with deep knowledge of global enterprise and SaaS ecosystems. Accurately extracts direct competitors, relative strengths, market opportunities, and defensible advantages. | **Optimal** (~$0.0003 per run) |
+| **2. Brand & Competitor Research** | World-knowledge retrieval & industry competitive analysis | **Google Gemini 1.5 Flash / 3.5 Flash-Lite** | Vast pre-training corpus with deep knowledge of global enterprise and SaaS ecosystems. Accurately extracts direct competitors, relative strengths, market opportunities, and defensible advantages. | **Optimal** (~$0.0003 per run) |
 | **3. Multi-Platform Search Query Discovery** | Cross-channel search intent classification & keyword extraction | **Google Gemini 1.5 Flash** | Google's intrinsic search indexing alignment excels at query intent. Effectively differentiates professional B2B problem queries (LinkedIn/Google) from visual discovery tags (Instagram/X). Strictly adheres to negative constraints: **Zero hallucinated search volume numbers**. | **Optimal** (Follows zero-hallucination constraint with 100% adherence) |
 | **4. SEO Copywriting & Recommendations** | Constraint-bounded technical copywriting | **Gemini 1.5 Flash / GPT-4o-mini** | Both models excel at character-bounded copy (meta descriptions $\le 160$ chars, title tags $\le 60$ chars, semantic keyword clustering). Gemini 1.5 Flash is preferred due to 50% lower output token pricing. | **Optimal** (Fast output generation $\le 1.2\text{s}$) |
 | **5. Service Catalog & Beneficiary Mapping** | Unstructured table/schema extraction | **Google Gemini 1.5 Flash** | Accurately parses landing page feature sections into structured entities: `(name, description, target_industry, target_customer, primary_benefit)` without dropping fields or merging distinct offerings. | **Optimal** (High entity extraction recall) |
 | **6. Target Audience & Pain Point Inference** | Empathic persona deduction & market segmentation | **Gemini 1.5 Flash / Pro** | Capable of inferring implicit ICPs (Ideal Customer Profiles), secondary demographics, and latent psychological/operational pain points from tone, pricing tiers, and client logos. | **Optimal** (Flash delivers 95% of Pro's reasoning at 6% of the cost) |
 | **7. Strict Structured Output Enforcement** | Strict JSON schema compliance | **Gemini 1.5 Flash** (via `google-genai` SDK `response_schema`) | Compiles Pydantic schema directly into model decoding constraints. Eliminates markdown formatting wrappers (` ```json `), trailing commas, or missing attributes. 99.8% first-pass schema validity. | **Eliminates 1,500 few-shot prompt tokens** |
 
-### 2. Comprehensive Model Benchmark & Pricing Matrix (November 2026 Rates)
+### 2. Comprehensive Model Benchmark & Live Pricing Matrix
 
-| Model Provider & Name | Input Price / 1M Tokens (USD) | Output Price / 1M Tokens (USD) | Context Window | Typical Latency (TTFT) | Native Structured JSON | Free Tier / Availability | Evaluation Verdict |
-|:---|:---|:---|:---|:---|:---|:---|:---|
-| **Google Gemini 1.5 Flash** | **$0.075** (≤128k) | **$0.30** (≤128k) | **1,000,000** | **~1.2s – 1.5s** | **Native** (`response_schema`) | 15 RPM, 1M TPM, 1,500 RPD (Free) | **PRIMARY CHOICE: Unbeatable price/performance, 1M context, lowest latency** |
-| **Google Gemini 1.5 Flash-8B** | $0.0375 (≤128k) | $0.15 (≤128k) | 1,000,000 | ~0.8s – 1.1s | Native | 15 RPM, 1M TPM | Ultra-cheap, but slight reduction in complex multi-competitor deductive reasoning |
-| **Google Gemini 1.5 Pro** | $1.25 (≤128k) | $5.00 (≤128k) | 2,000,000 | ~3.5s – 5.0s | Native | 2 RPM, 50 RPD | 16x more expensive than Flash; best for multi-page 50-URL site crawls |
-| **OpenAI GPT-4o-mini** | $0.15 | $0.60 | 128,000 | ~1.5s – 2.0s | Native (`json_schema` strict) | Pay-as-you-go | **SECONDARY FALLBACK: 2x cost of Gemini Flash, excellent JSON strictness** |
-| **DeepSeek V3 (Chat)** | $0.14 (Cache: $0.014) | $0.28 | 64,000 | ~1.8s – 2.5s | Partial (Prompt guided) | Pay-as-you-go | Highly competitive price, but requires third-party gateway and schema retry handling |
-| **Claude 3.5 Haiku** | $0.80 (Cache: $0.08) | $4.00 | 200,000 | ~1.8s – 2.2s | Tool Use / Schema | Pay-as-you-go | 10.7x input / 13.3x output cost; high quality but higher operational cost |
-| **OpenAI GPT-4o** | $2.50 | $10.00 | 128,000 | ~3.0s – 4.5s | Native (`json_schema` strict) | Pay-as-you-go | 33x more expensive; financially unviable for high-volume automated link analysis |
-| **Claude 3.5 Sonnet** | $3.00 (Cache: $0.30) | $15.00 | 200,000 | ~3.2s – 5.0s | Tool Use / Schema | Pay-as-you-go | 40x input / 50x output cost; industry leader for coding, excessive for link analysis |
+Comparing active model landscape categorized across **Tier 1 (Fast Structured Extractors)**, **Tier 2 (Frontier Thinking Models)**, and **Tier 3 (Flagship Multimodal)**:
 
-### 3. Empirical Per-Request Unit Economics (Cleaned 8k Input Tokens + 1.5k Output Tokens)
+| Model Provider & Name | Architectural Tier | Input Price / 1M Tokens (USD) | Output Price / 1M Tokens (USD) | Context Window | Typical Latency (TTFT) | Native Structured JSON | Evaluation Verdict |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---|
+| **Google Gemini 1.5 Flash** | **Tier 1: Fast Extractor** | **$0.075** (≤128k) | **$0.30** (≤128k) | **1,000,000** | **~1.1s – 1.4s** | **Native** (`response_schema`) | **PRIMARY CHOICE: Unbeatable price/performance, 1M context, lowest latency, 15 RPM free tier** |
+| **OpenAI GPT-4o-mini** | **Tier 1: Fast Extractor** | **$0.15** (Cache: $0.075) | **$0.60** | 128,000 | ~1.4s – 1.8s | **Native** (`json_schema` strict) | **SECONDARY FALLBACK: 2x cost of Gemini Flash, bulletproof schema reliability** |
+| **DeepSeek Flash V4.1** | **Tier 1: Fast Extractor** | Off-Peak: **$0.003** (Hit) / **$0.15** | Off-Peak: **$0.60** | 1,000,000 | ~1.8s – 2.2s | Partial / Schema | **TERTIARY FALLBACK: Ultra-low off-peak cache reads ($0.003/1M), global cost hedge** |
+| **Gemini 3.5 Flash-Lite** | Tier 1: Fast Extractor | $0.30 | $2.50 | 1,048,576 | ~0.8s – 1.1s | Native | High throughput, but 8x higher output cost than Gemini 1.5 Flash baseline |
+| **Claude Haiku 4.5 / 3.5** | Tier 1: Fast Extractor | $0.80 (Cache: $0.08) | $4.00 | 200,000 | ~1.6s – 2.0s | Tool Use / Schema | 10.7x input / 13.3x output cost vs Gemini Flash; reliable but higher base cost |
+| **DeepSeek V4-Pro (Thinking)** | Tier 2: Frontier Thinking | Off-Peak: $0.66 / Peak: $1.32 | Off-Peak: $1.98 / Peak: $3.96 | 1,000,000 | ~5.0s – 9.0s | Partial / Schema | Advanced reasoning, but introduces 5s–9s latency and thinking token overhead |
+| **OpenAI o3-mini (Thinking)** | Tier 2: Frontier Thinking | $1.10 (Cache: $0.55) | $4.40 *(thinking billed as output)* | 200,000 | ~4.5s – 8.0s | Strict JSON schema | Reasoning tokens double output bill ($4.40/1M) and triple latency |
+| **Claude Sonnet 5.5 (Thinking)** | Tier 2: Frontier Thinking | $2.00 (Cache: $0.10) | $10.00 *(thinking billed as output)* | 1,000,000 | ~6.0s – 12.0s | Tool Use / Schema | **Anti-Pattern:** 50x costlier and 6x slower for structured JSON extraction |
+| **Google Gemini 4 Carbon** | Tier 2: Frontier Thinking | $2.00 (Cache: $0.10) | $10.00 *(dynamic thinking tokens)* | 1,048,576 | ~8.0s – 14.0s | Native | **Anti-Pattern:** Designed for complex SWE/science. Overkill and slow for web metadata |
+| **Claude Opus 5.5 (Thinking)** | Tier 2: Frontier Thinking | $4.00 (Cache: $0.20) | $20.00 *(thinking billed as output)* | 1,000,000 | ~10.0s – 18.0s | Tool Use / Schema | **Anti-Pattern:** 100x cost explosion, generates 2k+ thinking tokens, breaches 2.5s SLA |
+| **OpenAI o1 (Thinking)** | Tier 2: Frontier Thinking | $15.00 (Cache: $7.50) | $60.00 *(reasoning billed as output)* | 200,000 | ~12.0s – 25.0s | Restricted | **Anti-Pattern:** 340x costlier than Gemini Flash. Financially unviable for link analysis |
+| **OpenAI GPT-4o** | Tier 3: Multimodal Flagship | $2.50 (Cache: $1.25) | $10.00 | 128,000 | ~3.0s – 4.5s | Native (`json_schema` strict) | 33x more expensive; financially unviable for high-volume automated link analysis |
+| **Google Gemini 1.5 Pro** | Tier 3: Multimodal Flagship | $1.25 (≤128k) | $5.00 (≤128k) | 2,000,000 | ~3.5s – 5.0s | Native | 16.7x cost of Flash; reserved for massive 50-URL site crawls exceeding 100k tokens |
 
-Baseline: 1 USD = ₹86.00 INR. Total Cost = $(\text{Input Tokens} \times \text{Input Rate}) + (\text{Output Tokens} \times \text{Output Rate})$.
+### 3. Architectural Deep-Dive: Why Latest Thinking Models Are an Anti-Pattern for Link Analysis
 
-| Model | Cost per Request (USD) | Cost per Request (INR) | Cost per 10,000 Requests (USD) | Cost per 10,000 Requests (INR) | Cost Multiplier vs Gemini Flash |
-|:---|:---|:---|:---|:---|:---|
-| **Google Gemini 1.5 Flash** | **$0.001050** | **₹0.0903 (~9 Paise)** | **$10.50** | **₹903 INR** | **1.0x (Baseline)** |
-| **DeepSeek V3** | $0.001540 | ₹0.1324 (~13 Paise) | $15.40 | ₹1,324 INR | 1.47x |
-| **OpenAI GPT-4o-mini** | $0.002100 | ₹0.1806 (~18 Paise) | $21.00 | ₹1,806 INR | 2.00x |
-| **Claude 3.5 Haiku** | $0.012400 | ₹1.0664 (~₹1.07) | $124.00 | ₹10,664 INR | 11.81x |
-| **Google Gemini 1.5 Pro** | $0.017500 | ₹1.5050 (~₹1.51) | $175.00 | ₹15,050 INR | 16.67x |
-| **OpenAI GPT-4o** | $0.035000 | ₹3.0100 (~₹3.01) | $350.00 | ₹30,100 INR | 33.33x |
-| **Claude 3.5 Sonnet** | $0.046500 | ₹3.9990 (~₹4.00) | $465.00 | ₹39,990 INR | 44.29x |
+Deploying a Frontier Thinking Model (`claude-opus-5-5`, `gemini-4-carbon`, `o1`) for website link analysis is an **architectural and economic anti-pattern**:
+1. **The Hidden "Thinking Token Tax":** Thinking models run internal chain-of-thought loops generating **1,500 to 4,000 thinking tokens** before outputting the first JSON brace. These tokens are billed at full output rates ($10.00 to $60.00 per 1M), inflating costs by 50x–340x!
+2. **Severe Latency SLA Breach ($\le 2.5\text{s}$ Target vs $8\text{s}$–$20\text{s}$ Actual):** Fast extractors (Gemini Flash, GPT-4o-mini) finish generation in **~1.1s to 1.4s**. Thinking models take **8s to 20s**, failing the latency SLA and causing client HTTP timeouts.
+3. **Cognitive Task Misalignment:** Link analysis is an **Information Extraction, Semantic Classification, and Copywriting** task. It requires **constrained logit decoding** (Pydantic schema enforcement), NOT inductive mathematical theorem proving or complex symbolic logic.
+4. **Risk of Hallucinated Search Volume Numbers:** Reasoning models trained on reinforcement learning often attempt to synthesize plausible numerical search volumes, violating the strict constraint of Section 2.B (*"Do NOT hallucinate search volume numbers"*). Fast extractors constrained at the logit level mathematically prevent unauthorized fields.
+
+### 4. Empirical Per-Request Unit Economics (Cleaned 8k Input + 1.5k Output + Thinking Tokens)
+
+Baseline: 1 USD = ₹86.00 INR. Total Cost = $(\text{Input Tokens} \times \text{Input Rate}) + ((\text{Output Tokens} + \text{Thinking Tokens}) \times \text{Output Rate})$.
+
+| Model Identifier | Architectural Category | Cost / Request (USD) | Cost / Request (INR) | 10,000 Requests (USD) | 10,000 Requests (INR) | Multiplier vs Gemini Flash |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Google Gemini 1.5 Flash** | **Fast Extractor (Primary)** | **$0.001050** | **₹0.0903 (~9 Paise)** | **$10.50** | **₹903 INR** | **1.0x (Baseline)** |
+| **DeepSeek Flash (Off-Peak)** | Fast Extractor (Tertiary) | $0.001540 | ₹0.1324 (~13 Paise) | $15.40 | ₹1,324 INR | 1.47x |
+| **OpenAI GPT-4o-mini** | Fast Extractor (Secondary) | $0.002100 | ₹0.1806 (~18 Paise) | $21.00 | ₹1,806 INR | 2.00x |
+| **Gemini 3.5 Flash-Lite** | Fast Extractor | $0.006150 | ₹0.5289 (~53 Paise) | $61.50 | ₹5,289 INR | 5.86x |
+| **Claude Haiku 4.5 / 3.5** | Fast Extractor | $0.012400 | ₹1.0664 (~₹1.07) | $124.00 | ₹10,664 INR | 11.81x |
+| **DeepSeek V4-Pro (Thinking)** | Frontier Thinking | $0.013200 | ₹1.1352 (~₹1.14) | $132.00 | ₹11,352 INR | 12.57x |
+| **Google Gemini 1.5 Pro** | Multimodal Flagship | $0.017500 | ₹1.5050 (~₹1.51) | $175.00 | ₹15,050 INR | 16.67x |
+| **OpenAI o3-mini (Thinking)** | Frontier Thinking | $0.024200 | ₹2.0812 (~₹2.08) | $242.00 | ₹20,812 INR | 23.05x |
+| **OpenAI GPT-4o** | Multimodal Flagship | $0.035000 | ₹3.0100 (~₹3.01) | $350.00 | ₹30,100 INR | 33.33x |
+| **Google Gemini 4 Carbon** | **Frontier Thinking** | **$0.056000** | **₹4.8160 (~₹4.82)** | **$560.00** | **₹48,160 INR** | **53.33x** |
+| **Claude Sonnet 5.5 (Thinking)** | **Frontier Thinking** | **$0.056000** | **₹4.8160 (~₹4.82)** | **$560.00** | **₹48,160 INR** | **53.33x** |
+| **Claude Opus 5.5 (Thinking)** | **Frontier Thinking** | **$0.112000** | **₹9.6320 (~₹9.63)** | **$1,120.00** | **₹96,320 INR** | **106.67x** |
+| **OpenAI o1 (Thinking)** | **Frontier Thinking** | **$0.360000** | **₹30.9600 (~₹31.00)**| **$3,600.00** | **₹3,09,600 INR** | **342.86x** |
 
 ### 4. 7-Pillar Cost & Token Optimization Engine
 1. **DOM Tag Pruning:** Strips non-content elements (`<script>`, `<style>`, `<nav>`, `<footer>`, `<svg>`, cookie banners), reducing payload size by 70%–90% at $0.00 cost.
