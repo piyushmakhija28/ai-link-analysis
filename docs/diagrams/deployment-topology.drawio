@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="deployment-topology" name="Deployment Topology">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cloud" value="Render.com Cloud (Oregon Region)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="120" y="80" width="600" height="340" as="geometry"/>
+        </mxCell>
+        <mxCell id="lb" value="Render TLS Edge Proxy&#xa;Let's Encrypt HTTPS / 443" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="cloud">
+          <mxGeometry x="40" y="60" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="container" value="Docker Container (appuser:10001)&#xa;Uvicorn ASGI (:4000)&#xa;FastAPI App &amp; In-Memory Cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="cloud">
+          <mxGeometry x="40" y="180" width="240" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="web" value="Public Internet Websites&#xa;[Ports 80 &amp; 443]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="gemini" value="Google Gemini API&#xa;[Gemini 1.5 Flash]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="800" y="240" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="cloud" source="lb" target="container">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

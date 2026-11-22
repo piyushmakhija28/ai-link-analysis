@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net" modified="2026-11-22T07:55:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="c4-component" name="C4 Component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="layer_routers" value="Presentation Tier (Routers)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="220" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="r_analysis" value="AnalysisRouter&#xa;(POST /link-analysis)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="layer_routers">
+          <mxGeometry x="20" y="50" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="r_health" value="HealthRouter&#xa;(GET /health, /ready)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="layer_routers">
+          <mxGeometry x="20" y="140" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer_services" value="Core Service Tier" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="360" y="80" width="280" height="420" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_orch" value="AnalysisOrchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="layer_services">
+          <mxGeometry x="30" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_cache" value="CacheService (SHA-256)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="layer_services">
+          <mxGeometry x="30" y="140" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_ext" value="HtmlSemanticExtractor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="layer_services">
+          <mxGeometry x="30" y="230" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_llm" value="GeminiClient / Mock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="layer_services">
+          <mxGeometry x="30" y="320" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer_utils" value="Security &amp; Infrastructure Tier" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="240" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="u_ssrf" value="SSRFValidator&#xa;(DNS &amp; Subnet Check)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="layer_utils">
+          <mxGeometry x="30" y="50" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="u_log" value="StructuredLogger&#xa;(JSON + Correlation ID)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="layer_utils">
+          <mxGeometry x="30" y="140" width="180" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
